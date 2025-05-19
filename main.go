@@ -32,12 +32,12 @@ type FileInfo struct {
 	OriginalName string
 	ExpireTime   time.Time
 	DatePath     string
-	MD5          string // 存储文件的 MD5 校验和
+	MD5          string // 存储文件的 MD5 校验码
 }
 
 var fileMap = make(map[string]FileInfo)
 
-// 计算文件的 MD5 校验和
+// 计算文件的 MD5 校验码
 func calculateMD5(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -177,7 +177,7 @@ func main() {
 			return
 		}
 
-		// 计算文件的 MD5 校验和
+		// 计算文件的 MD5 校验码
 		md5sum, err := calculateMD5(filePath)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to calculate file checksum"})
@@ -201,7 +201,7 @@ func main() {
 		fullURL := fmt.Sprintf("http://%s%s", host, downloadURL)
 		curlCmd := fmt.Sprintf("curl -L -o \"%s\" \"%s\"", file.Filename, fullURL)
 
-		// 返回下载链接、MD5 校验和和 curl 命令
+		// 返回下载链接、MD5 校验码和 curl 命令
 		c.JSON(http.StatusOK, gin.H{
 			"message": "File uploaded successfully",
 			"url":     downloadURL,

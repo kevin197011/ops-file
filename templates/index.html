@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload</title>
+    <title>文件上传</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -121,18 +121,26 @@
         .file-size {
             color: #666;
         }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>File Upload</h1>
-        <p>Upload your file and get a download link valid for 7 days.</p>
+        <h1>文件上传</h1>
+        <p>上传文件后获取7天有效的下载链接。</p>
 
         <form class="upload-form" id="uploadForm">
             <div class="file-input">
                 <input type="file" id="file" name="file" required>
             </div>
-            <button type="submit" class="submit-btn" id="submitBtn">Upload</button>
+            <button type="submit" class="submit-btn" id="submitBtn">上传</button>
         </form>
 
         <div class="progress-container" id="progressContainer">
@@ -143,6 +151,10 @@
         </div>
 
         <div id="result" class="result"></div>
+
+        <div class="footer">
+            系统运维部驱动
+        </div>
     </div>
 
     <script>
@@ -151,14 +163,14 @@
             try {
                 await navigator.clipboard.writeText(text);
                 // 更新按钮状态
-                button.textContent = 'Copied!';
+                button.textContent = '已复制!';
                 button.classList.add('copied');
                 setTimeout(() => {
-                    button.textContent = 'Copy';
+                    button.textContent = '复制';
                     button.classList.remove('copied');
                 }, 2000);
             } catch (err) {
-                console.error('Failed to copy text: ', err);
+                console.error('复制失败: ', err);
                 // 如果 Clipboard API 失败，回退到传统方法
                 const input = document.createElement('input');
                 input.style.position = 'fixed';
@@ -171,10 +183,10 @@
                 document.body.removeChild(input);
 
                 // 更新按钮状态
-                button.textContent = 'Copied!';
+                button.textContent = '已复制!';
                 button.classList.add('copied');
                 setTimeout(() => {
-                    button.textContent = 'Copy';
+                    button.textContent = '复制';
                     button.classList.remove('copied');
                 }, 2000);
             }
@@ -206,9 +218,9 @@
 
         // 格式化文件大小
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
+            if (bytes === 0) return '0 字节';
             const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const sizes = ['字节', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
@@ -257,30 +269,30 @@
                         resultDiv.style.display = 'block';
                         resultDiv.className = 'result success';
                         resultDiv.innerHTML = `
-                            <p>File uploaded successfully!</p>
+                            <p>文件上传成功！</p>
                             <div class="download-link">
-                                <span>Download link: <a href="${response.url}" target="_blank">${fullUrl}</a></span>
-                                <button class="copy-btn" onclick="copyToClipboard('${fullUrl}', this)">Copy</button>
+                                <span>下载链接：<a href="${response.url}" target="_blank">${fullUrl}</a></span>
+                                <button class="copy-btn" onclick="copyToClipboard('${fullUrl}', this)">复制</button>
                             </div>
                             <div class="file-info">
-                                <p>File Size: <code>${(file.size / (1024 * 1024)).toFixed(2)} MB</code></p>
-                                <p>MD5 Checksum: <code>${response.md5}</code></p>
-                                <button class="copy-btn" onclick="copyToClipboard('${response.md5}', this)">Copy MD5</button>
+                                <p>文件大小：<code>${(file.size / (1024 * 1024)).toFixed(2)} MB</code></p>
+                                <p>MD5 校验码：<code>${response.md5}</code></p>
+                                <button class="copy-btn" onclick="copyToClipboard('${response.md5}', this)">复制</button>
                             </div>
                             <div class="file-info">
-                                <p>Curl Command:</p>
+                                <p>Curl 命令：</p>
                                 <div class="download-link">
                                     <code>${response.curl}</code>
-                                    <button class="copy-btn" onclick="copyToClipboard(decodeURIComponent('${encodeURIComponent(response.curl)}'), this)">Copy</button>
+                                    <button class="copy-btn" onclick="copyToClipboard(decodeURIComponent('${encodeURIComponent(response.curl)}'), this)">复制</button>
                                 </div>
                             </div>
-                            <p>This link will expire in 7 days.</p>
+                            <p>此链接将在7天后过期。</p>
                         `;
                     } else {
                         const response = JSON.parse(xhr.responseText);
                         resultDiv.style.display = 'block';
                         resultDiv.className = 'result error';
-                        resultDiv.textContent = response.error || 'Upload failed';
+                        resultDiv.textContent = response.error || '上传失败';
                     }
                     progressContainer.style.display = 'none';
                     submitBtn.disabled = false;
@@ -290,7 +302,7 @@
                 xhr.onerror = function() {
                     resultDiv.style.display = 'block';
                     resultDiv.className = 'result error';
-                    resultDiv.textContent = 'Upload failed: Network error';
+                    resultDiv.textContent = '上传失败：网络错误';
                     progressContainer.style.display = 'none';
                     submitBtn.disabled = false;
                 };
@@ -299,7 +311,7 @@
             } catch (error) {
                 resultDiv.style.display = 'block';
                 resultDiv.className = 'result error';
-                resultDiv.textContent = 'Upload failed: ' + error.message;
+                resultDiv.textContent = '上传失败：' + error.message;
                 progressContainer.style.display = 'none';
                 submitBtn.disabled = false;
             }
