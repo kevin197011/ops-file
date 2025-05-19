@@ -10,7 +10,7 @@ COPY go.mod ./
 # 下载依赖
 RUN go mod download
 
-# 复制源代码
+# 复制源代码和模板文件
 COPY . .
 
 # 构建应用

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -12,6 +14,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
+
+//go:embed templates
+var templatesFS embed.FS
 
 const (
 	uploadDir    = "./uploads"
@@ -97,7 +102,10 @@ func isDirEmpty(dir string) (bool, error) {
 
 func main() {
 	r := gin.Default()
-	r.LoadHTMLGlob("templates/*")
+
+	// 使用嵌入的模板文件
+	tmpl := template.Must(template.ParseFS(templatesFS, "templates/*"))
+	r.SetHTMLTemplate(tmpl)
 
 	// 设置静态文件目录
 	r.Static("/uploads", "./uploads")
