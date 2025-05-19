@@ -1,47 +1,104 @@
-# File Upload Server
+# 文件中转站
 
-A simple file upload server that generates random download URLs with a 7-day expiration period.
+一个简单高效的文件中转服务，支持文件上传、下载和自动清理功能。
 
-## Features
+## 功能特点
 
-- File upload with size limit (100MB)
-- Random download URL generation
-- 7-day file expiration
-- Automatic cleanup of expired files
-- Modern web interface
+- 文件上传：支持大文件上传（最大 1GB）
+- 文件下载：生成临时下载链接
+- 自动清理：可配置文件保留时间（1-30天）
+- 文件完整性：使用 MD5 校验确保文件完整性
+- 多种下载方式：支持浏览器直接下载、curl 和 wget 命令下载
+- 进度显示：实时显示上传进度
+- 复制功能：一键复制下载链接、MD5 校验码和下载命令
 
-## Requirements
+## 技术栈
 
-- Go 1.21 or later
-- Required Go packages:
-  - github.com/gin-gonic/gin
-  - github.com/google/uuid
+- 后端：Go + Gin 框架
+- 前端：HTML + CSS + JavaScript
+- 存储：本地文件系统
+- 容器化：Docker + Docker Compose
 
-## Installation
+## 快速开始
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   go mod download
-   ```
-3. Run the server:
-   ```bash
-   go run main.go
-   ```
+### 使用 Docker Compose 运行
 
-The server will start on port 8080. Visit http://localhost:8080 to access the web interface.
+1. 克隆仓库：
+```bash
+git clone [仓库地址]
+cd [项目目录]
+```
 
-## Usage
+2. 启动服务：
+```bash
+docker-compose up -d
+```
 
-1. Open the web interface in your browser
-2. Click "Choose File" to select a file to upload
-3. Click "Upload" to upload the file
-4. After successful upload, you'll receive a download link
-5. The download link will be valid for 7 days
+3. 访问服务：
+打开浏览器访问 http://localhost:8080
 
-## Security Notes
+### 本地运行
 
-- Files are stored with random UUID names
-- Original filenames are preserved for downloads
-- Files are automatically deleted after 7 days
-- Maximum file size is limited to 100MB
+1. 安装 Go 环境（1.24 或更高版本）
+
+2. 安装依赖：
+```bash
+go mod download
+```
+
+3. 运行服务：
+```bash
+go run main.go
+```
+
+4. 访问服务：
+打开浏览器访问 http://localhost:8080
+
+## 配置说明
+
+- 文件大小限制：1GB
+- 默认保留时间：1天
+- 清理间隔：24小时
+- 服务端口：8080
+
+## 目录结构
+
+```
+.
+├── main.go           # 主程序
+├── templates/        # HTML 模板
+│   └── index.html    # 上传页面
+├── uploads/         # 文件存储目录
+├── Dockerfile       # Docker 构建文件
+└── docker-compose.yml # Docker Compose 配置
+```
+
+## 使用说明
+
+1. 选择要上传的文件
+2. 选择文件保留天数（1-30天）
+3. 点击上传按钮
+4. 等待上传完成
+5. 复制下载链接或使用提供的命令下载文件
+
+## 注意事项
+
+- 上传的文件会在指定天数后自动删除
+- 建议定期备份重要文件
+- 请勿上传敏感或机密文件
+- 文件大小限制为 1GB
+
+## 维护说明
+
+- 定期检查磁盘空间使用情况
+- 监控系统日志
+- 定期更新依赖包
+- 保持系统安全更新
+
+## 贡献指南
+
+欢迎提交 Issue 和 Pull Request 来帮助改进项目。
+
+## 许可证
+
+MIT License
