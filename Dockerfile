@@ -32,7 +32,7 @@ COPY --from=builder /app/file-server .
 RUN mkdir -p /app/uploads && chmod 755 /app/uploads
 
 # 暴露端口
-EXPOSE 8089
+EXPOSE 8080
 
 # 运行应用
 CMD ["./file-server"]
