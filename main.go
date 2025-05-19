@@ -177,7 +177,16 @@ func main() {
 		}
 
 		filePath := filepath.Join(fileInfo.DatePath, fileID)
-		c.FileAttachment(filePath, fileInfo.OriginalName)
+
+		// 设置响应头，保持原始文件名和类型
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileInfo.OriginalName))
+		c.Header("Content-Type", "application/octet-stream")
+		c.Header("Content-Transfer-Encoding", "binary")
+		c.Header("Expires", "0")
+		c.Header("Cache-Control", "must-revalidate")
+		c.Header("Pragma", "public")
+
+		c.File(filePath)
 	})
 
 	// 启动服务器
