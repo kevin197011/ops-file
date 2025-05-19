@@ -147,29 +147,37 @@
 
     <script>
         // 全局复制函数
-        window.copyToClipboard = function(text, button) {
-            // 创建临时输入框
-            const input = document.createElement('input');
-            input.style.position = 'fixed';
-            input.style.opacity = 0;
-            input.value = text;
-            document.body.appendChild(input);
+        window.copyToClipboard = async function(text, button) {
+            try {
+                await navigator.clipboard.writeText(text);
+                // 更新按钮状态
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                // 如果 Clipboard API 失败，回退到传统方法
+                const input = document.createElement('input');
+                input.style.position = 'fixed';
+                input.style.opacity = 0;
+                input.value = text;
+                document.body.appendChild(input);
+                input.select();
+                input.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                document.body.removeChild(input);
 
-            // 选择并复制文本
-            input.select();
-            input.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-
-            // 移除临时输入框
-            document.body.removeChild(input);
-
-            // 更新按钮状态
-            button.textContent = 'Copied!';
-            button.classList.add('copied');
-            setTimeout(() => {
-                button.textContent = 'Copy';
-                button.classList.remove('copied');
-            }, 2000);
+                // 更新按钮状态
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            }
         };
 
         const form = document.getElementById('uploadForm');
@@ -237,6 +245,14 @@
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         const fullUrl = `${window.location.origin}${response.url}`;
+                        // 转义 curl 命令中的引号和特殊字符
+                        const escapedCurl = response.curl
+                            .replace(/\\/g, '\\\\')
+                            .replace(/'/g, "\\'")
+                            .replace(/"/g, '\\"')
+                            .replace(/\n/g, '\\n')
+                            .replace(/\r/g, '\\r')
+                            .replace(/\t/g, '\\t');
 
                         resultDiv.style.display = 'block';
                         resultDiv.className = 'result success';
@@ -245,6 +261,18 @@
                             <div class="download-link">
                                 <span>Download link: <a href="${response.url}" target="_blank">${fullUrl}</a></span>
                                 <button class="copy-btn" onclick="copyToClipboard('${fullUrl}', this)">Copy</button>
+                            </div>
+                            <div class="file-info">
+                                <p>File Size: <code>${(file.size / (1024 * 1024)).toFixed(2)} MB</code></p>
+                                <p>MD5 Checksum: <code>${response.md5}</code></p>
+                                <button class="copy-btn" onclick="copyToClipboard('${response.md5}', this)">Copy MD5</button>
+                            </div>
+                            <div class="file-info">
+                                <p>Curl Command:</p>
+                                <div class="download-link">
+                                    <code>${response.curl}</code>
+                                    <button class="copy-btn" onclick="copyToClipboard(decodeURIComponent('${encodeURIComponent(response.curl)}'), this)">Copy</button>
+                                </div>
                             </div>
                             <p>This link will expire in 7 days.</p>
                         `;
