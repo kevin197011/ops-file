@@ -129,16 +129,39 @@
             padding: 20px 0;
             border-top: 1px solid #eee;
         }
+        .expire-days {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .expire-days select {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>文件上传</h1>
-        <p>上传文件后获取7天有效的下载链接。</p>
+        <p>上传文件后获取下载链接。</p>
 
         <form class="upload-form" id="uploadForm">
             <div class="file-input">
                 <input type="file" id="file" name="file" required>
+            </div>
+            <div class="expire-days">
+                <label for="expireDays">文件保留天数：</label>
+                <select id="expireDays" name="expireDays">
+                    <option value="1">1天</option>
+                    <option value="3">3天</option>
+                    <option value="7">7天</option>
+                    <option value="15">15天</option>
+                    <option value="30">30天</option>
+                </select>
             </div>
             <button type="submit" class="submit-btn" id="submitBtn">上传</button>
         </form>
@@ -233,6 +256,7 @@
 
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('expireDays', document.getElementById('expireDays').value);
 
             // 显示进度条
             progressContainer.style.display = 'block';
@@ -257,8 +281,15 @@
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         const fullUrl = `${window.location.origin}${response.url}`;
-                        // 转义 curl 命令中的引号和特殊字符
+                        // 转义命令中的引号和特殊字符
                         const escapedCurl = response.curl
+                            .replace(/\\/g, '\\\\')
+                            .replace(/'/g, "\\'")
+                            .replace(/"/g, '\\"')
+                            .replace(/\n/g, '\\n')
+                            .replace(/\r/g, '\\r')
+                            .replace(/\t/g, '\\t');
+                        const escapedWget = response.wget
                             .replace(/\\/g, '\\\\')
                             .replace(/'/g, "\\'")
                             .replace(/"/g, '\\"')
@@ -286,7 +317,14 @@
                                     <button class="copy-btn" onclick="copyToClipboard(decodeURIComponent('${encodeURIComponent(response.curl)}'), this)">复制</button>
                                 </div>
                             </div>
-                            <p>此链接将在7天后过期。</p>
+                            <div class="file-info">
+                                <p>Wget 命令：</p>
+                                <div class="download-link">
+                                    <code>${response.wget}</code>
+                                    <button class="copy-btn" onclick="copyToClipboard(decodeURIComponent('${encodeURIComponent(response.wget)}'), this)">复制</button>
+                                </div>
+                            </div>
+                            <p>此链接将在${response.expireDays}天后过期。</p>
                         `;
                     } else {
                         const response = JSON.parse(xhr.responseText);

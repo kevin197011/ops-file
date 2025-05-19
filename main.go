@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,7 @@ var templatesFS embed.FS
 const (
 	uploadDir    = "./uploads"
 	maxFileSize  = 1 << 30 // 1GB
-	expireDays   = 7
+	expireDays   = 1       // 默认1天后删除
 	cleanupHours = 24
 )
 
@@ -33,6 +34,7 @@ type FileInfo struct {
 	ExpireTime   time.Time
 	DatePath     string
 	MD5          string // 存储文件的 MD5 校验码
+	ExpireDays   int    // 添加保留天数字段
 }
 
 var fileMap = make(map[string]FileInfo)
@@ -158,6 +160,15 @@ func main() {
 			return
 		}
 
+		// 获取保留天数
+		expireDaysStr := c.PostForm("expireDays")
+		expireDays := 1 // 默认1天
+		if expireDaysStr != "" {
+			if days, err := strconv.Atoi(expireDaysStr); err == nil && days > 0 {
+				expireDays = days
+			}
+		}
+
 		// 生成唯一文件名
 		fileID := uuid.New().String()
 		fileExt := filepath.Ext(file.Filename)
@@ -190,9 +201,10 @@ func main() {
 			ExpireTime:   time.Now().AddDate(0, 0, expireDays),
 			DatePath:     datePath,
 			MD5:          md5sum,
+			ExpireDays:   expireDays,
 		}
 
-		// 生成下载链接和 curl 命令
+		// 生成下载链接和命令
 		downloadURL := fmt.Sprintf("/download/%s", newFileName)
 		host := c.Request.Host
 		if host == "" {
@@ -200,13 +212,16 @@ func main() {
 		}
 		fullURL := fmt.Sprintf("http://%s%s", host, downloadURL)
 		curlCmd := fmt.Sprintf("curl -L -o \"%s\" \"%s\"", file.Filename, fullURL)
+		wgetCmd := fmt.Sprintf("wget -O \"%s\" \"%s\"", file.Filename, fullURL)
 
-		// 返回下载链接、MD5 校验码和 curl 命令
+		// 返回下载链接、MD5 校验和和命令
 		c.JSON(http.StatusOK, gin.H{
-			"message": "File uploaded successfully",
-			"url":     downloadURL,
-			"md5":     md5sum,
-			"curl":    curlCmd,
+			"message":    "File uploaded successfully",
+			"url":        downloadURL,
+			"md5":        md5sum,
+			"curl":       curlCmd,
+			"wget":       wgetCmd,
+			"expireDays": expireDays,
 		})
 	})
 
